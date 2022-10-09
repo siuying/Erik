@@ -258,19 +258,21 @@ extension WebKitLayoutEngine {
     }
 
     fileprivate func handleLoadRequestCompletion(completionHandler: (Error?) -> Void) {
-        // wait load finish
-        let condition = pageLoadedPolicy.continueCondition
-        let max = Date().timeIntervalSince1970 + pageLoadTimeout
-        while(condition(self)) {
-            if pageLoadTimeout > 0 && Date().timeIntervalSince1970 > max  {
-                completionHandler(ErikError.timeOutError(time: pageLoadTimeout))
-                return
+        javaScriptQueue.async { [unowned self] in
+            // wait load finish
+            let condition = pageLoadedPolicy.continueCondition
+            let max = Date().timeIntervalSince1970 + pageLoadTimeout
+            while(condition(self)) {
+                if pageLoadTimeout > 0 && Date().timeIntervalSince1970 > max  {
+                    completionHandler(ErikError.timeOutError(time: pageLoadTimeout))
+                    return
+                }
+            #if os(OSX)
+                RunLoop.current.run(mode: RunLoop.Mode.default, before: Date.distantFuture)
+            #endif
             }
-        #if os(OSX)
-            RunLoop.current.run(mode: RunLoop.Mode.default, before: Date.distantFuture)
-        #endif
+            completionHandler(nil)
         }
-        completionHandler(nil)
     }
     
     fileprivate func handleHTML(_ completionHandler: CompletionHandler?) {
