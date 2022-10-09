@@ -257,7 +257,7 @@ extension WebKitLayoutEngine {
         }
     }
 
-    fileprivate func handleLoadRequestCompletion(completionHandler: (Error?) -> Void) {
+    fileprivate func handleLoadRequestCompletion(completionHandler: @escaping (Error?) -> Void) {
         javaScriptQueue.async { [unowned self] in
             // wait load finish
             let condition = pageLoadedPolicy.continueCondition
